@@ -7,6 +7,7 @@ use Magento\Framework\Module\ModuleListInterface;
 use Magento\Store\Model\ScopeInterface;
 use SM\Payment\Model\ResourceModel\RetailPayment\CollectionFactory;
 use SM\XRetail\Helper\Data as RetailHelper;
+use Magento\Framework\ObjectManagerInterface;
 
 class Data
 {
@@ -27,16 +28,23 @@ class Data
      */
     protected $scopeConfig;
 
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+
     public function __construct(
         RetailHelper $retailHelper,
         ModuleListInterface $moduleList,
         CollectionFactory $paymentCollectionFactory,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        ObjectManagerInterface $objectManager
     ) {
         $this->retailHelper = $retailHelper;
         $this->moduleList = $moduleList;
         $this->paymentCollectionFactory = $paymentCollectionFactory;
         $this->scopeConfig = $scopeConfig;
+        $this->objectManager = $objectManager;
     }
 
     /**
@@ -65,6 +73,11 @@ class Data
             $stripeMode = $this->getConfigValue('payment/stripe_payments_basic/stripe_mode', $storeId);
             if ($type === 'secret') {
                 $apiKey = $this->getConfigValue("payment/stripe_payments_basic/stripe_{$stripeMode}_sk", $storeId);
+
+                if (class_exists('StripeIntegration\Payments\Model\Config')) {
+                    $configManager = $this->objectManager->get('StripeIntegration\Payments\Model\Config');
+                    $apiKey = $configManager->decrypt($apiKey);
+                }
             } else {
                 $apiKey = $this->getConfigValue("payment/stripe_payments_basic/stripe_{$stripeMode}_pk", $storeId);
             }
