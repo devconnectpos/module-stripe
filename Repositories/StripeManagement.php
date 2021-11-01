@@ -51,17 +51,6 @@ class StripeManagement extends ServiceAbstract
     }
 
     /**
-     * @param $quoteId
-     * @return float
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
-     */
-    protected function getTotalAmountFromQuote($quoteId)
-    {
-        $quote = $this->cartRepository->get($quoteId);
-        return (int) $quote->getGrandTotal() * 100;
-    }
-
-    /**
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -71,10 +60,11 @@ class StripeManagement extends ServiceAbstract
         $quoteId = $this->getRequest()->getParam('quote_id');
 
         try {
+            $quote = $this->cartRepository->get($quoteId);
             $paymentIntent = \Stripe\PaymentIntent::create(
                 [
-                    'amount' => $this->getTotalAmountFromQuote($quoteId),
-                    'currency' => "usd",
+                    'amount' => (int)($quote->getGrandTotal() * 100),
+                    'currency' => $quote->getCurrency() ? strtolower($quote->getCurrency()->getStoreCurrencyCode()) : "usd",
                     'payment_method_types' => ['card_present'],
                     'capture_method' => 'manual',
                 ]
