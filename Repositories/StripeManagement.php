@@ -61,9 +61,10 @@ class StripeManagement extends ServiceAbstract
 
         try {
             $quote = $this->cartRepository->get($quoteId);
+            $grandTotal = $quote->getGrandTotal() * 100;
             $paymentIntent = \Stripe\PaymentIntent::create(
                 [
-                    'amount' => (int)($quote->getGrandTotal() * 100),
+                    'amount' => (int)round($grandTotal),
                     'currency' => $quote->getCurrency() ? strtolower($quote->getCurrency()->getStoreCurrencyCode()) : "usd",
                     'payment_method_types' => ['card_present'],
                     'capture_method' => 'manual',
