@@ -91,7 +91,7 @@ class Data
             throw new \Magento\Framework\Exception\LocalizedException(__('Payment not found!'));
         }
         $stripePayment = $collection->getFirstItem();
-        $paymentData = json_decode($stripePayment->getData('payment_data'), true);
+        $paymentData = json_decode((string)$stripePayment->getData('payment_data'), true);
 
         if ($type === 'secret') {
             return $paymentData['secret_api_key'];
